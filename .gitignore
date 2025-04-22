@@ -6,3 +6,4 @@ launch.json
 /build
 *.egg
 *.pycache
+.mypy_cache
