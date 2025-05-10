@@ -9,4 +9,5 @@ launch.json
 .mypy_cache
 
 data/*
-data_store/*
+data_store/dq/*
+data_store/gold/*
