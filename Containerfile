@@ -2,13 +2,16 @@ FROM python:3.11-slim
 
 # Set environment variables
 ENV SPARK_VERSION=3.5.5
-ENV DELTA_VERSION=2.4.0
+ENV DELTA_VERSION=3.3.0
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$PYTHONPATH
 
+RUN apt-get update && apt-get upgrade
+
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade && \
+    apt-get install -y --no-install-recommends \
     openjdk-17-jdk \
     wget \
     && rm -rf /var/lib/apt/lists/*
@@ -25,14 +28,11 @@ WORKDIR /app
 RUN python -m venv .venv && . ./.venv/bin/activate
 
 # # Install PySpark and Delta Lake
-# RUN pip install --no-cache-dir \
-#     pyspark==${SPARK_VERSION} \
-#     delta-spark==${DELTA_VERSION} \
-#     pandas \
-#     pyarrow
-
-# # # Verify installation
-# # RUN pyspark --version
+RUN pip install --no-cache-dir \
+    pyspark==${SPARK_VERSION} \
+    delta-spark==${DELTA_VERSION} \
+    pandas \
+    pyarrow
 
 # # # Command to run when container starts
 # # CMD ["bash"]
