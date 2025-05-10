@@ -103,3 +103,13 @@ def check_nullability(df: DataFrame, expected_schema: StructType) -> None:
                     f"Non nullable column {c.name} from the data frame containts "
                     + f"{nbr_null} NULL values."
                 )
+
+
+# Now, lets do the same for delta tables
+DATA_LOCATION = pathlib.Path(__file__).parent / "data" / "valid"
+
+df = spark.read.schema(true_schema).csv(path=str(PATH_TO_VALID_DATA), header=True)
+df.write.format("delta").mode("overwrite").save(str(DATA_LOCATION))
+
+df = spark.read.format("delta").load(path=str(DATA_LOCATION))
+df.printSchema()
