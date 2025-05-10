@@ -77,6 +77,8 @@ def check_column_names(df: DataFrame, expected_schema: StructType) -> None:
             + "but got {len(actual_column_names)}"
         )
 
+    expected_column_names.sort()
+    actual_column_names.sort()
     for expected, actual in zip(expected_column_names, actual_column_names):
         if expected != actual:
             raise ValueError(f"Expected column name '{expected}', but got '{actual}'")
