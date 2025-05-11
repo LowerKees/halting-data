@@ -8,7 +8,8 @@ authors = [
 ]
 requires-python = "~=3.11.0"
 dependencies = [
-    "delta-spark==3.3.0",
+    "pyspark~=3.5.0",
+    "delta-spark~=3.3.0",
     "great-expectations[spark]~=1.4.0",
     "numpy==1.24.0",
     "pandas>=2.1.1",

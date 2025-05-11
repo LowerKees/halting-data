@@ -9,7 +9,7 @@ def constant_writer(df: DataFrame, output_path: str) -> None:
         df.write.format("delta")
         .mode("overwrite")
         .option("overwriteSchema", "true")  # This changes the whole game
-        .save(output_path)
+        .saveAsTable("sales", "path/to/table")
     )
 
 

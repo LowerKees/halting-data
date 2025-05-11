@@ -19,6 +19,10 @@ class Processor:
             output_path: a pathlib.Path instance containing a directory path to load to
                 data to.
         """
-        df = self.spark.read.csv(path=str(input_path), header=True, sep=",")
+        schema = "id STRING, amt DECIMAL, from STRING, to STRING, dts TIMESTAMP"
+        df = self.spark.read.schema(schema).csv(
+            path=str(input_path), header=True, sep=","
+        )
         ...
+        df.coalesce(1)
         df.write.format("delta").mode("append").save(path=str(output_path))
