@@ -10,4 +10,4 @@ launch.json
 
 data/*
 data_store/dq/*
-data_store/gold/*
+data_store/transactions/gold/*
