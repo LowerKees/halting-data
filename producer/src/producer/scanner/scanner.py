@@ -44,16 +44,12 @@ validation_df = spark.read.schema(result_schema).json(
     spark.sparkContext.parallelize([validation_json])
 )
 
+# The nested structure is huge and we only want the success indicator and individual results
+validation_df = validation_df.select(
+    "success", explode("results").alias("result_array")
+)
+validation_df.show(truncate=False)
 
-# Show basic validation statistics
-print("Overall Validation Statistics:")
-validation_df.select("success").show(truncate=False)
-
-# For a detailed view of a specific expectation
-print("Detailed View of First Expectation:")
-validation_df.select("success", explode("results").alias("result")).select(
-    "result.*"
-).show(10, truncate=False)
-
-# Save the results to a JSON file if needed
-# validation_df.write.json("/path/to/validation/results", mode="overwrite")
+validation_df.write.format("delta").mode("append").saveAsTable(
+    "transactions", path=str(data_store / "dq" / "transactions")
+)

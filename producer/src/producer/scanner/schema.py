@@ -1,7 +1,7 @@
 from pyspark.sql.types import (
     ArrayType,
     BooleanType,
-    DoubleType,
+    FloatType,
     IntegerType,
     MapType,
     StringType,
@@ -25,20 +25,8 @@ result_schema = StructType(
                                     StructField("type", StringType(), True),
                                     StructField(
                                         "kwargs",
-                                        StructType(
-                                            [
-                                                StructField(
-                                                    "batch_id", StringType(), True
-                                                ),
-                                                StructField(
-                                                    "column", StringType(), True
-                                                ),
-                                                StructField(
-                                                    "type_list",
-                                                    ArrayType(StringType(), True),
-                                                    True,
-                                                ),
-                                            ]
+                                        MapType(
+                                            keyType=StringType(), valueType=StringType()
                                         ),
                                         True,
                                     ),
@@ -91,7 +79,7 @@ result_schema = StructType(
                     StructField("evaluated_expectations", IntegerType(), True),
                     StructField("successful_expectations", IntegerType(), True),
                     StructField("unsuccessful_expectations", IntegerType(), True),
-                    StructField("success_percent", DoubleType(), True),
+                    StructField("success_percent", FloatType(), True),
                 ]
             ),
             True,
