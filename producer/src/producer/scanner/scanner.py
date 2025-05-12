@@ -50,6 +50,6 @@ validation_df = validation_df.select(
 )
 validation_df.show(truncate=False)
 
-validation_df.write.format("delta").mode("append").saveAsTable(
-    "transactions", path=str(data_store / "dq" / "transactions")
+validation_df.write.format("delta").mode("append").save(
+    str(data_store / "dq" / "transactions")
 )
