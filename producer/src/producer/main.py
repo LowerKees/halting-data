@@ -1,8 +1,8 @@
 import pathlib
 import sys
 
-from producer.middleware import spark
 from producer.processor import Processor
+from shared.src.quality_gates.middleware import spark
 
 
 def main(input_path: pathlib.Path, output_path: pathlib.Path):

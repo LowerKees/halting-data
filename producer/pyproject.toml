@@ -13,6 +13,7 @@ dependencies = [
     "great-expectations[spark]~=1.4.0",
     "numpy==1.24.0",
     "pandas>=2.1.1",
+    "quality-gates",
 ]
 
 [project.scripts]
@@ -26,3 +27,6 @@ build-backend = "hatchling.build"
 dev = [
     "faker>=37.1.0",
 ]
+
+[tool.uv.sources]
+quality-gates = { path = "../shared", editable = true }
