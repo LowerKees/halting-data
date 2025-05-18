@@ -2,7 +2,7 @@ from delta import configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
 
 builder = (
-    SparkSession.builder.appName("producer")
+    SparkSession.builder.appName("quality_gates")
     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
     .config(
         "spark.sql.catalog.spark_catalog",

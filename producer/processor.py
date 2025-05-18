@@ -19,10 +19,19 @@ class Processor:
             output_path: a pathlib.Path instance containing a directory path to load to
                 data to.
         """
-        schema = "id STRING, amt DECIMAL, from STRING, to STRING, dts TIMESTAMP"
+        if input_path.parts[-1] == "invalid.csv":
+            print("Using invalid schema...")
+            schema = "id STRING, amt DECIMAL(18,8), from STRING, to STRING, dts TIMESTAMP, curr STRING"
+        else:
+            print("Using valid schema...")
+            schema = (
+                "id STRING, amt DECIMAL(18,8), from STRING, to STRING, dts TIMESTAMP"
+            )
         df = self.spark.read.schema(schema).csv(
             path=str(input_path), header=True, sep=","
         )
         ...
         df.coalesce(1)
-        df.write.format("delta").mode("append").save(path=str(output_path))
+        df.write.format("delta").option("mergeSchema", True).mode("append").save(
+            path=str(output_path)
+        )

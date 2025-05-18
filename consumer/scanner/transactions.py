@@ -6,10 +6,10 @@ import uuid
 
 import great_expectations as gx
 from pyspark.sql.functions import current_timestamp, explode, lit
-from quality_gates.middleware import spark
 
-from producer.expectations import transactions
+from consumer.scanner.expectations import exp
 from producer.scanner.schema import result_schema
+from shared.middleware import spark
 
 data_store = pathlib.Path(__file__).parents[4] / "data_store"
 
@@ -39,6 +39,7 @@ context.validation_definitions.add(vd)
 
 
 df = spark.read.format("delta").load(path=str(data_store / "transactions" / "gold"))
+
 validation_result = vd.run(
     batch_parameters={"dataframe": df}, result_format={"result_format": "SUMMARY"}
 )

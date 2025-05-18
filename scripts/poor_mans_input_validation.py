@@ -2,89 +2,46 @@
 
 import pathlib
 
-from delta import configure_spark_with_delta_pip
-from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import DataFrame
 from pyspark.sql.types import (
     DecimalType,
-    IntegerType,
     StringType,
     StructField,
     StructType,
     TimestampType,
 )
 
-spark = configure_spark_with_delta_pip(
-    SparkSession.builder.appName("input_validation")
-    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-    .config(
-        "spark.sql.catalog.spark_catalog",
-        "org.apache.spark.sql.delta.catalog.DeltaCatalog",
-    )
-).getOrCreate()
-
-DATA_ROOT = pathlib.Path(__file__).parents[1] / "data_store" / "transactions" / "src"
-PATH_TO_VALID_DATA = DATA_ROOT / "valid.csv"
-PATH_TO_INVALID_DATA = DATA_ROOT / "invalid.csv"
-
-for p in [PATH_TO_VALID_DATA, PATH_TO_INVALID_DATA]:
-    if not p.exists():
-        raise FileNotFoundError(f"File at path {str(p)} not found")
-
-# Ideally, you'd store the schema in a schema store. Which could just be another file.
-true_schema = StructType(
-    [
-        StructField("id", StringType(), False),
-        StructField("amt", DecimalType(16, 8), False),
-        StructField("from", StringType(), False),
-        StructField("to", StringType(), False),
-        StructField("dts", TimestampType(), False),
-    ]
-)
-
-string_schema = StructType(
-    [
-        StructField("id", StringType(), False),
-        StructField("amt", StringType(), False),  # Changed to string
-        StructField("from", StringType(), False),
-        StructField("to", StringType(), False),
-        StructField("dts", TimestampType(), False),
-    ]
-)
-
-integer_schema = StructType(
-    [
-        StructField("id", StringType(), False),
-        StructField("amt", DecimalType(16, 8), False),
-        StructField("from", IntegerType(), False),  # changed from string to integer
-        StructField("to", StringType(), False),
-        StructField("dts", TimestampType(), False),
-    ]
-)
-
-for schema in [true_schema, string_schema, integer_schema]:
-    spark.read.schema(schema).csv(path=str(PATH_TO_VALID_DATA), header=True).show(
-        n=5, truncate=False
-    )
+from shared.middleware import spark
 
 
-def check_column_names(df: DataFrame, expected_schema: StructType) -> None:
+def check_column_names(
+    actual_schema: StructType,
+    expected_schema: StructType,
+    error_on_additional_cols: bool = False,
+) -> None:
+    print("Checking columns...")
     expected_column_names = [field.name for field in expected_schema]
-    actual_column_names = df.columns
+    actual_column_names = [field.name for field in actual_schema]
 
-    if len(expected_column_names) != len(actual_column_names):
-        raise ValueError(
-            f"Expected {len(expected_column_names)} columns, "
-            + "but got {len(actual_column_names)}"
+    not_found = []
+    for expected_column_name in expected_column_names:
+        if expected_column_name not in actual_column_names:
+            not_found.append(expected_column_name)
+
+    if len(not_found) > 0:
+        raise ValueError(f"Expected column name(s) {not_found} not found")
+
+    if error_on_additional_cols:
+        print("Checking if all actual columns are in the expected schema")
+        check_column_names(
+            actual_schema=expected_schema,
+            expected_schema=actual_schema,
+            error_on_additional_cols=False,
         )
-
-    expected_column_names.sort()
-    actual_column_names.sort()
-    for expected, actual in zip(expected_column_names, actual_column_names):
-        if expected != actual:
-            raise ValueError(f"Expected column name '{expected}', but got '{actual}'")
 
 
 def check_dtype(df: DataFrame, expected_schema: StructType) -> None:
+    print("Checking data types...")
     for field in expected_schema:
         c = df.schema[field.name]
         if c.dataType != field.dataType:
@@ -95,6 +52,7 @@ def check_dtype(df: DataFrame, expected_schema: StructType) -> None:
 
 
 def check_nullability(df: DataFrame, expected_schema: StructType) -> None:
+    print("Checking nullability...")
     for field in expected_schema:
         c = df.schema[field.name]
         if not field.nullable:
@@ -107,11 +65,34 @@ def check_nullability(df: DataFrame, expected_schema: StructType) -> None:
                 )
 
 
-# Now, lets do the same for delta tables
-DATA_LOCATION = pathlib.Path(__file__).parent / "data" / "valid"
+def main():
+    schema = StructType(
+        [
+            StructField("id", StringType(), False),
+            StructField("amt", DecimalType(18, 8), False),
+            StructField("from", StringType(), False),
+            StructField("to", StringType(), False),
+            StructField("dts", TimestampType(), False),
+        ]
+    )
+    DATA_ROOT = (
+        pathlib.Path(__file__).parents[1] / "data_store" / "transactions" / "gold"
+    )
 
-df = spark.read.schema(true_schema).csv(path=str(PATH_TO_VALID_DATA), header=True)
-df.write.format("delta").mode("overwrite").save(str(DATA_LOCATION))
+    if not DATA_ROOT.exists():
+        raise FileNotFoundError(f"File at path {str(DATA_ROOT)} not found")
 
-df = spark.read.format("delta").load(path=str(DATA_LOCATION))
-df.printSchema()
+    df = spark.read.format("delta").load(path=str(DATA_ROOT), header=True)
+    df.show(n=5, truncate=False)
+
+    check_column_names(
+        actual_schema=df.schema, expected_schema=schema, error_on_additional_cols=True
+    )
+    check_dtype(df=df, expected_schema=schema)
+    check_nullability(df=df, expected_schema=schema)
+
+    print("Data is valid")
+
+
+if __name__ == "__main__":
+    main()

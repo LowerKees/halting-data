@@ -2,7 +2,7 @@ import pathlib
 import sys
 
 from producer.processor import Processor
-from shared.src.quality_gates.middleware import spark
+from shared.middleware import spark
 
 
 def main(input_path: pathlib.Path, output_path: pathlib.Path):
@@ -20,4 +20,5 @@ if __name__ == "__main__":
     if not output_path.is_dir():
         raise ValueError(f"The value {output_path} is not a directory")
 
+    main(input_path=input_path, output_path=output_path)
     main(input_path=input_path, output_path=output_path)

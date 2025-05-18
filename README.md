@@ -1,5 +1,16 @@
 # General
 
+Before you begin: make sure to export the repo path to your python path
+```bash
+export PYTHONPATH='/path/to/root'
+```
+
+And install the tkinter bins so that you can display the plot from `scripts/plot_dq.py`.
+
+```bash
+sudo apt-get install python3-tk
+```
+
 This repo contains three nodes in a data mesh:
 1. A 'producer' node that produces transactional data
 2. A 'data store' node that acts the data product's output ports
@@ -21,20 +32,61 @@ StructType(
 Below is a sample of five random records from the data set.
 ![Five records from the transaction set.](/static/sample_transactions.png)
 
-Running the producer in a valid scenario:
+Start with a clean slate
 ```bash
-uv run producer/src/producer/main.py data_store/transactions/src/valid.csv data_store/transactions/gold
+rm -rf data_store/transactions/gold
+```
+
+Setup the gold landing zone if not on the system
+```bash
+! test -d data_store/transactions/gold && mkdir data_store/transactions/gold
+```
+
+Running the producer in a valid scenario producing a valid set of transactions:
+```bash
+uv run producer/main.py data_store/transactions/src/valid.csv data_store/transactions/gold
+```
+
+Running a poor man's input validation
+```bash
+uv run scripts/poor_mans_input_validation.py
 ```
 
 Checking data expectations and publishing them to the data store.
 ```bash
-uv run producer/src/producer/scanner/scanner.py
+uv run producer/scanner/scanner.py
 ```
 
 Consumper validation the data
 ```bash
+uv run consumer/validator.py <run_id> | <iso_date>
+```
+
+Now generate some poluted producer output, including non unique transaction ids:
+```bash
+uv run producer/main.py data_store/transactions/src/invalid.csv data_store/transactions/gold
+```
+
+Validate that the number of transactions has doubles
+```bash
+uv run scripts/count_table_size.py
+```
+
+Again: running data expectations and publishing them to the data store.
+```bash
+uv run producer/scanner/scanner.py
+```
+
+Now: consumer checks should indicate that we do not want to load the data
+```bash
 uv run consumer/src/consumer/validator.py <run_id> | <iso_date>
 ```
+
+Check out the published DQ table
+```bash
+uv run scripts/plot_dq.py
+```
+
 The deeply nested Great Expectations output
 ```json
 {
