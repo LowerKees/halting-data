@@ -55,9 +55,9 @@ else:
 # easy check
 overall_outcome = df.select(pymin("success")).collect()[0][0]
 
-# if overall_outcome:
-#     print("All checks passed")
-#     sys.exit(0)
+if overall_outcome:
+    print("All checks passed")
+    sys.exit(0)
 
 # Define custom logic here
 df2 = df
@@ -77,7 +77,7 @@ df_unique = df_unique.select(
 )
 
 df = df.unionByName(df_unique)
-df.show(truncate=False)  # Ohohwww... its empty!
+df.show(truncate=False)
 
 specific_outcome = df.select(pymin("result")).collect()[0][0]
 

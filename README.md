@@ -57,6 +57,11 @@ Checking data expectations and publishing them to the data store.
 uv run producer/scanner/scanner.py
 ```
 
+Check the output of the dq run
+```bash
+uv run scripts/plot_dq.py
+```
+
 Consumper validation the data
 ```bash
 uv run consumer/validator.py <run_id> | <iso_date>
@@ -67,7 +72,7 @@ Now generate some poluted producer output, including non unique transaction ids:
 uv run producer/main.py data_store/transactions/src/invalid.csv data_store/transactions/gold
 ```
 
-Validate that the number of transactions has doubles
+Validate that the number of transactions has doubled
 ```bash
 uv run scripts/count_table_size.py
 ```

@@ -21,4 +21,3 @@ if __name__ == "__main__":
         raise ValueError(f"The value {output_path} is not a directory")
 
     main(input_path=input_path, output_path=output_path)
-    main(input_path=input_path, output_path=output_path)
