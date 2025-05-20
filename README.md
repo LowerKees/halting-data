@@ -1,15 +1,17 @@
-# General
+# Preparation
 
 Before you begin: make sure to export the repo path to your python path
 ```bash
 export PYTHONPATH='/path/to/root'
 ```
 
-And install the tkinter bins so that you can display the plot from `scripts/plot_dq.py`.
+And install the tkinter package so that you can display the plot from `scripts/plot_dq.py`.
 
 ```bash
 sudo apt-get install python3-tk
 ```
+
+# General
 
 This repo contains three nodes in a data mesh:
 1. A 'producer' node that produces transactional data
@@ -31,6 +33,8 @@ StructType(
 ```
 Below is a sample of five random records from the data set.
 ![Five records from the transaction set.](/static/sample_transactions.png)
+
+# Step-by-step demonstration
 
 Start with a clean slate
 ```bash
@@ -72,11 +76,6 @@ Now generate some poluted producer output, including non unique transaction ids:
 uv run producer/main.py data_store/transactions/src/invalid.csv data_store/transactions/gold
 ```
 
-Validate that the number of transactions has doubled
-```bash
-uv run scripts/count_table_size.py
-```
-
 Again: running data expectations and publishing them to the data store.
 ```bash
 uv run producer/scanner/scanner.py
@@ -91,6 +90,8 @@ Check out the published DQ table
 ```bash
 uv run scripts/plot_dq.py
 ```
+
+# Additional Information
 
 The deeply nested Great Expectations output
 ```json
